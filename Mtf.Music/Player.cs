@@ -1,4 +1,6 @@
-﻿namespace Mtf.Music;
+﻿using System.Runtime.Versioning;
+
+namespace Mtf.Music;
 
 public class Player
 {
@@ -11,17 +13,19 @@ public class Player
     {
         if (frequency is >= 37 and <= 32767)
         {
-            Console.Beep(frequency, duration);
+            WindowsBeep(frequency, duration);
+            //LinuxBeep(frequency, duration);
         }
         else
         {
             Thread.Sleep(duration);
         }
     }
-    
+
     public void PlayNote(Note note)
     {
-        var duration = CurrentlyPlayedMelody?.GetNoteLength(note.NoteType) ?? 0;
+        ArgumentNullException.ThrowIfNull(CurrentlyPlayedMelody, nameof(CurrentlyPlayedMelody));
+        var duration = CurrentlyPlayedMelody.GetNoteLength(note.NoteType);
         if (note is Fermata)
         {
             Thread.Sleep(duration);
@@ -67,4 +71,16 @@ public class Player
     {
         musicPlayerCancellationTokenSource.Cancel();
     }
+
+    [SupportedOSPlatform("windows")]
+    private static void WindowsBeep(ushort frequency, ushort duration)
+    {
+        Console.Beep(frequency, duration);
+    }
+
+    //[SupportedOSPlatform("linux")]
+    //private static void LinuxBeep(ushort frequency, ushort duration)
+    //{
+    //    Process.Start("beep", "-f 440 -l 200");
+    //}
 }

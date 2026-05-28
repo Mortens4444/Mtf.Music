@@ -4,8 +4,8 @@ namespace Mtf.Music.Test
 {
     public partial class MainForm : Form
     {
-        private Melody melody = new BociBoci();
-        private Player player = new();
+        private readonly Melody melody = new BociBoci();
+        private readonly Player player = new();
 
         public MainForm()
         {
