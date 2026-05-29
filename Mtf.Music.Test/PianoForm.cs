@@ -1,5 +1,5 @@
 ﻿using Mtf.Music.Melodies;
-using Mtf.Music.Notes;
+using System.Reflection;
 
 namespace Mtf.Music.Test;
 
@@ -7,106 +7,141 @@ public partial class PianoForm : Form
 {
     private readonly Player player = new();
 
+    private const int NumberOfOctaves = 3;
+    private const int StartOctave = 3;
+
+    private const int WhiteKeyWidth = 100;
+    private const int WhiteKeyHeight = 320;
+
+    private const int BlackKeyWidth = 65;
+    private const int BlackKeyHeight = 200;
+
+    private static readonly string[] WhiteNotes = ["C", "D", "E", "F", "G", "A", "B"];
+    private static readonly (string Name, double Offset)[] BlackNotes =
+    [
+        ("Cs", 0.7),
+        ("Ds", 1.7),
+        ("Fs", 3.7),
+        ("Gs", 4.7),
+        ("As", 5.7)
+    ];
+
     public PianoForm()
     {
         InitializeComponent();
+
         player.CurrentlyPlayedMelody = new Empty(2, 4, 100);
+
         BuildKeyboard();
     }
 
     private void BuildKeyboard()
     {
-        int startX = 40;
-        int yWhite = 60;
-
-        int whiteW = 100;
-        int whiteH = 320;
-
-        int blackW = 65;
-        int blackH = 200;
-
-        var notes = new (string name, Func<Note> ctor, bool isBlack)[]
-        {
-            ("C4", () => new C4(), false),
-            ("C#4", () => new Cs4_Db4(), true),
-            ("D4", () => new D4(), false),
-            ("D#4", () => new Ds4_Eb4(), true),
-            ("E4", () => new E4(), false),
-            ("F4", () => new F4(), false),
-            ("F#4", () => new Fs4_Gb4(), true),
-            ("G4", () => new G4(), false),
-            ("G#4", () => new Gs4_Ab4(), true),
-            ("A4", () => new A4(), false),
-            ("A#4", () => new As4_Bb4(), true),
-            ("B4", () => new B4(), false),
-
-            ("C5", () => new C5(), false),
-            ("C#5", () => new Cs5_Db5(), true),
-            ("D5", () => new D5(), false),
-            ("D#5", () => new Ds5_Eb5(), true),
-            ("E5", () => new E5(), false),
-            ("F5", () => new F5(), false),
-            ("F#5", () => new Fs5_Gb5(), true),
-            ("G5", () => new G5(), false),
-            ("G#5", () => new Gs5_Ab5(), true),
-            ("A5", () => new A5(), false),
-            ("A#5", () => new As5_Bb5(), true),
-            ("B5", () => new B5(), false),
-        };
+        const int startX = 40;
+        const int yWhite = 60;
 
         int whiteIndex = 0;
-        var whitePositions = new Dictionary<string, int>();
 
-        // First pass: white keys
-        foreach (var n in notes.Where(n => !n.isBlack))
+        for (int octave = StartOctave; octave < StartOctave + NumberOfOctaves; octave++)
         {
-            int x = startX + whiteIndex * whiteW;
+            // White keys
+            foreach (var whiteNote in WhiteNotes)
+            {
+                var note = CreateNote($"{whiteNote}{octave}");
 
-            AddKey(n.name, n.ctor(), x, yWhite, whiteW, whiteH, Color.White, Color.Black);
+                if (note == null)
+                {
+                    continue;
+                }
 
-            whitePositions[n.name] = x;
-            whiteIndex++;
+                int x = startX + whiteIndex * WhiteKeyWidth;
+
+                AddKey(
+                    note.Name,
+                    note,
+                    x,
+                    yWhite,
+                    WhiteKeyWidth,
+                    WhiteKeyHeight,
+                    Color.White,
+                    Color.Black);
+
+                whiteIndex++;
+            }
+
+            // Black keys
+            foreach (var blackNote in BlackNotes)
+            {
+                //var note = CreateNote($"{blackNote.Name}{octave}");
+                var note = CreateNote($"{blackNote.Name}{octave}_{GetFlatName(blackNote.Name)}{octave}");
+                if (note == null)
+                {
+                    continue;
+                }
+
+                int x = startX + (int)((whiteIndex - 7 + blackNote.Offset) * WhiteKeyWidth);
+
+                AddKey(
+                    note.Name,
+                    note,
+                    x,
+                    yWhite,
+                    BlackKeyWidth,
+                    BlackKeyHeight,
+                    Color.Black,
+                    Color.White,
+                    true);
+            }
         }
 
-        // Second pass: black keys (offset between whites)
-        foreach (var n in notes.Where(n => n.isBlack))
-        {
-            var baseName = n.name.Replace("#", "").Replace("b", "");
-
-            // crude positioning: map manually via white index pattern
-            int x = GetBlackKeyX(n.name, startX, whiteW);
-
-            AddKey(n.name, n.ctor(), x, yWhite, blackW, blackH, Color.Black, Color.White, true);
-        }
-
-        Width = startX + whiteIndex * whiteW + 100;
+        Width = startX + whiteIndex * WhiteKeyWidth + 100;
         Height = 520;
-        Text = "Mtf.Music Piano (2 Octaves)";
+
+        Text = $"Mtf.Music Piano ({NumberOfOctaves} Octaves)";
+
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
     }
 
-    private static int GetBlackKeyX(string note, int startX, int whiteW)
+    private static string GetFlatName(string sharpName)
     {
-        return note switch
+        return sharpName switch
         {
-            "C#4" => startX + (int)(0.70 * whiteW),
-            "D#4" => startX + (int)(1.70 * whiteW),
-            "F#4" => startX + (int)(3.70 * whiteW),
-            "G#4" => startX + (int)(4.70 * whiteW),
-            "A#4" => startX + (int)(5.70 * whiteW),
-
-            "C#5" => startX + (int)(7.70 * whiteW),
-            "D#5" => startX + (int)(8.70 * whiteW),
-            "F#5" => startX + (int)(10.70 * whiteW),
-            "G#5" => startX + (int)(11.70 * whiteW),
-            "A#5" => startX + (int)(12.70 * whiteW),
-
-            _ => startX
+            "Cs" => "Db",
+            "Ds" => "Eb",
+            "Fs" => "Gb",
+            "Gs" => "Ab",
+            "As" => "Bb",
+            _ => throw new ArgumentOutOfRangeException(nameof(sharpName))
         };
     }
 
-    private void AddKey(string text, Note note, int x, int y, int w, int h, Color back, Color fore, bool top = false)
+    private static Note? CreateNote(string typeName)
+    {
+        string fullName = $"Mtf.Music.Notes.{typeName}";
+
+        var type = Assembly
+            .GetAssembly(typeof(Note))?
+            .GetType(fullName);
+
+        if (type == null)
+        {
+            return null;
+        }
+
+        return Activator.CreateInstance(type, NoteType.Quarter) as Note;
+    }
+
+    private void AddKey(
+        string text,
+        Note note,
+        int x,
+        int y,
+        int w,
+        int h,
+        Color back,
+        Color fore,
+        bool top = false)
     {
         var btn = new Button
         {
@@ -125,7 +160,9 @@ public partial class PianoForm : Form
         Controls.Add(btn);
 
         if (top)
+        {
             btn.BringToFront();
+        }
     }
 
     private void Play(Note note)
