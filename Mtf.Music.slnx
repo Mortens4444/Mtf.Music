@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Mtf.Music.Test/Mtf.Music.Test.csproj" />
+  <Project Path="Mtf.Music.UnitTests/Mtf.Music.UnitTests.csproj" Id="f8351099-6816-4f28-a0ba-1668be5d17c8" />
   <Project Path="Mtf.Music/Mtf.Music.csproj" />
 </Solution>
