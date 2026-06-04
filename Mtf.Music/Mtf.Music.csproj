@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
@@ -35,7 +35,7 @@
     <Description>A lightweight C# library for representing musical notes, melodies, and timing based on physical sound properties (frequency, wavelength, and musical theory abstractions).</Description>
     <PackageReadmeFile>.\ReadMe.md</PackageReadmeFile>
     <PackageLicenseFile>.\LICENSE.txt</PackageLicenseFile>
-    <RepositoryUrl>https://github.com/Mortens4444/Mtf.Extensions.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Mortens4444/Mtf.Music.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Note Music Player Melody Mortens</PackageTags>
   </PropertyGroup>
