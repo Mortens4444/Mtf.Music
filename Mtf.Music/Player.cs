@@ -11,10 +11,9 @@ public class Player
     
     public static void Beep(ushort frequency, ushort duration)
     {
-        if (frequency is >= 37 and <= 32767)
+        if (OperatingSystem.IsWindows() && frequency is >= 37 and <= 32767)
         {
             WindowsBeep(frequency, duration);
-            //LinuxBeep(frequency, duration);
         }
         else
         {
@@ -39,22 +38,26 @@ public class Player
 
     public void PlayMusic(Melody melody)
     {
-        if (CurrentlyPlayedMelody != null)
+        lock (soundPlayLock)
         {
-            return;
+            if (CurrentlyPlayedMelody != null)
+            {
+                return;
+            }
+
+            CurrentlyPlayedMelody = melody;
         }
 
         musicPlayerCancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = musicPlayerCancellationTokenSource.Token;
 
         Task.Factory.StartNew(() =>
         {
             lock (soundPlayLock)
             {
-                CurrentlyPlayedMelody = melody;
-
                 foreach (var note in melody)
                 {
-                    if (musicPlayerCancellationTokenSource.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         break;
                     }
@@ -64,7 +67,7 @@ public class Player
 
                 CurrentlyPlayedMelody = null;
             }
-        }, musicPlayerCancellationTokenSource.Token);
+        }, cancellationToken);
     }
 
     public void Stop()
@@ -77,10 +80,4 @@ public class Player
     {
         Console.Beep(frequency, duration);
     }
-
-    //[SupportedOSPlatform("linux")]
-    //private static void LinuxBeep(ushort frequency, ushort duration)
-    //{
-    //    Process.Start("beep", "-f 440 -l 200");
-    //}
 }

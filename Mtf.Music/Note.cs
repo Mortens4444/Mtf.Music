@@ -43,6 +43,7 @@ public abstract class Note
 
     public static implicit operator ushort(Note value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return (ushort)Math.Round(value.Frequency);
     }
 
